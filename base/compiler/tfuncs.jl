@@ -3047,7 +3047,7 @@ function _hasmethod_tfunc(interp::AbstractInterpreter, argtypes::Vector{Any}, sv
         vinfo = MethodMatchInfo(vresults, mt, types, false) # XXX: this should actually be an info with invoke-type edge
     else
         rt = Const(true)
-        vinfo = InvokeCallInfo(match, nothing, types)
+        vinfo = InvokeCallInfo(nothing, match, nothing, types)
     end
     info = MethodResultPure(vinfo) # XXX this should probably be something like `VirtualizedCallInfo`
     return CallMeta(rt, Union{}, EFFECTS_TOTAL, info)
