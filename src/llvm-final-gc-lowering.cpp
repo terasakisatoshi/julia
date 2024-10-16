@@ -225,21 +225,21 @@ bool FinalLowerGC::runOnFunction(Function &F)
 
         Value *callee = CI->getCalledOperand();
         assert(callee);
-        auto IS_INTRINSIC = [](auto intrinsic) {
-            auto intrinsic = getOrNull(intrinsic);
-            if (intrinsic == callee) {
+        auto IS_INTRINSIC = [&](auto intrinsic) {
+            auto intrinsic2 = getOrNull(intrinsic);
+            if (intrinsic2 == callee) {
                 errs() << "Final-GC-lowering didn't eliminate all intrinsics'" << F.getName() << "', dumping entire module!\n\n";
                 errs() << *F.getParent() << "\n";
                 abort();
             }
         };
-        IS_INTRINSIC(newGCFrame);
-        IS_INTRINSIC(pushGCFrame);
-        IS_INTRINSIC(popGCFrame);
-        IS_INTRINSIC(getGCFrameSlot);
-        IS_INTRINSIC(GCAllocBytes);
-        IS_INTRINSIC(queueGCRoot);
-        IS_INTRINSIC(safepoint);
+        IS_INTRINSIC(jl_intrinsics::newGCFrame);
+        IS_INTRINSIC(jl_intrinsics::pushGCFrame);
+        IS_INTRINSIC(jl_intrinsics::popGCFrame);
+        IS_INTRINSIC(jl_intrinsics::getGCFrameSlot);
+        IS_INTRINSIC(jl_intrinsics::GCAllocBytes);
+        IS_INTRINSIC(jl_intrinsics::queueGCRoot);
+        IS_INTRINSIC(jl_intrinsics::safepoint);
         }
     }
 #endif
