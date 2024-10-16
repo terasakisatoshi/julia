@@ -223,26 +223,23 @@ bool FinalLowerGC::runOnFunction(Function &F)
             if (!CI)
                 continue;
 
-            Value *callee = CI->getCalledOperand();
-            assert(callee);
-#define IS_INTRINSIC(INTRINSIC) \
-            do { \
-                auto intrinsic = getOrNull(jl_intrinsics::INTRINSIC); \
-                if (intrinsic == callee) { \
-                    errs() << "Final-GC-lowering didn't eliminate all intrinsics'" << F.getName() << "', dumping entire module!\n\n"; \
-                    errs() << *F.getParent() << "\n"; \
-                    abort(); \
-                } \
-            } while (0)
-            IS_INTRINSIC(newGCFrame);
-            IS_INTRINSIC(pushGCFrame);
-            IS_INTRINSIC(popGCFrame);
-            IS_INTRINSIC(getGCFrameSlot);
-            IS_INTRINSIC(GCAllocBytes);
-            IS_INTRINSIC(queueGCRoot);
-            IS_INTRINSIC(safepoint);
-
-#undef IS_INTRINSIC
+        Value *callee = CI->getCalledOperand();
+        assert(callee);
+        auto IS_INTRINSIC = [](auto intrinsic) {
+            auto intrinsic = getOrNull(intrinsic);
+            if (intrinsic == callee) {
+                errs() << "Final-GC-lowering didn't eliminate all intrinsics'" << F.getName() << "', dumping entire module!\n\n";
+                errs() << *F.getParent() << "\n";
+                abort();
+            }
+        };
+        IS_INTRINSIC(newGCFrame);
+        IS_INTRINSIC(pushGCFrame);
+        IS_INTRINSIC(popGCFrame);
+        IS_INTRINSIC(getGCFrameSlot);
+        IS_INTRINSIC(GCAllocBytes);
+        IS_INTRINSIC(queueGCRoot);
+        IS_INTRINSIC(safepoint);
         }
     }
 #endif
