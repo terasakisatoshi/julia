@@ -399,11 +399,10 @@ static void buildEarlyOptimizerPipeline(ModulePassManager &MPM, PassBuilder *PB,
           if (O.getSpeedupLevel() >= 2) {
             FPM.addPass(SROAPass(SROAOptions::ModifyCFG));
             FPM.addPass(EarlyCSEPass(true));
-            FPM.addPass(JumpThreadingPass());
-            FPM.addPass(CorrelatedValuePropagationPass());
-            FPM.addPass(SimplifyCFGPass(basicSimplifyCFGOptions()));
             FPM.addPass(InstCombinePass());
             FPM.addPass(AggressiveInstCombinePass());
+            FPM.addPass(JumpThreadingPass());
+            FPM.addPass(CorrelatedValuePropagationPass());
             FPM.addPass(LibCallsShrinkWrapPass());
             FPM.addPass(ReassociatePass());
             JULIA_PASS(FPM.addPass(AllocOptPass()));
