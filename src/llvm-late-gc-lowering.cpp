@@ -1200,7 +1200,11 @@ State LateLowerGCFrame::LocalScan(Function &F) {
                             }
                         }
                         assert(allocas.size() > 0);
-                        assert(std::all_of(allocas.begin(), allocas.end(), [&] (AllocaInst* SRetAlloca) {return (SRetAlloca->getArraySize() == allocas[0]->getArraySize() && SRetAlloca->getAllocatedType() == allocas[0]->getAllocatedType());}));
+                        assert(std::all_of(allocas.begin(), allocas.end(), [&] (AllocaInst* SRetAlloca)
+                        {
+                          return (SRetAlloca->getArraySize() == allocas[0]->getArraySize() &&
+                          SRetAlloca->getAllocatedType() == allocas[0]->getAllocatedType());
+                        }));
                         for (AllocaInst *SRet : allocas) {
                             if (!(SRet->isStaticAlloca() && isa<PointerType>(ElT) && ElT->getPointerAddressSpace() == AddressSpace::Tracked)) {
                                 assert(!tracked.derived);
@@ -1209,13 +1213,13 @@ State LateLowerGCFrame::LocalScan(Function &F) {
                                 }
                                 else {
                                     Value *arg1 = (CI->arg_begin()[1])->stripInBoundsOffsets();
-                                    SmallVector<AllocaInst *> gc_allocas;
+                                    SmallSet<AllocaInst *, 8> gc_allocas;
                                     SmallVector<Value*> worklist;
                                     worklist.push_back(arg1);
                                     while (!worklist.empty()) {
                                         Value *V = worklist.pop_back_val();
                                         if (AllocaInst *Alloca = dyn_cast<AllocaInst>(V->stripInBoundsOffsets())) {
-                                            gc_allocas.push_back(Alloca);
+                                            gc_allocas.insert(Alloca);
                                         } else if (PHINode *Phi = dyn_cast<PHINode>(V)) {
                                             for (Value *Incoming : Phi->incoming_values()) {
                                                 worklist.push_back(Incoming);
@@ -1237,7 +1241,11 @@ State LateLowerGCFrame::LocalScan(Function &F) {
                                     }
 
                                     assert(gc_allocas.size() > 0);
-                                    assert(std::all_of(gc_allocas.begin(), gc_allocas.end(), [&] (AllocaInst* SRetAlloca) {return (SRetAlloca->getArraySize() == gc_allocas[0]->getArraySize() && SRetAlloca->getAllocatedType() == gc_allocas[0]->getAllocatedType());}));
+                                    assert(std::all_of(gc_allocas.begin(), gc_allocas.end(), [&] (AllocaInst* SRetAlloca)
+                                    {
+                                        return (SRetAlloca->getArraySize() == (*gc_allocas.begin())->getArraySize() &&
+                                        SRetAlloca->getAllocatedType() == (*gc_allocas.begin())->getAllocatedType());
+                                    }));
                                     for (AllocaInst *SRet_gc : gc_allocas) {
                                         if (!(SRet_gc->isStaticAlloca() && isa<PointerType>(ElT) && ElT->getPointerAddressSpace() == AddressSpace::Tracked))
                                             S.ArrayAllocas[SRet_gc] = tracked.count * cast<ConstantInt>(SRet_gc->getArraySize())->getZExtValue();

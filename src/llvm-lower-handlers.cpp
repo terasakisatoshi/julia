@@ -245,7 +245,7 @@ static bool lowerExcHandlers(Function &F) {
         if (auto change = dyn_cast<ConstantInt>(it.first->getArgOperand(1)))
             minPops = change->getLimitedValue();
         else if (auto Phi = dyn_cast<PHINode>(it.first->getArgOperand(1))) {
-            //This should really do a dataflow analysis but assuming worst case means that we will always have enough space
+            // XXX: This should really do a dataflow analysis but assuming worst case means that we will always have enough space
             uint64_t MinPhiDepth = std::numeric_limits<uint64_t>::max();
             for (Value *Incoming : Phi->incoming_values()) {
                 MinPhiDepth = std::min(MinPhiDepth, cast<ConstantInt>(Incoming)->getLimitedValue());
