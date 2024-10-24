@@ -765,7 +765,8 @@ function typeinf_edge(interp::AbstractInterpreter, method::Method, @nospecialize
     end
     if frame === false
         # completely new, but check again after reserving in the engine
-        ci_from_engine = cache_mode == CACHE_MODE_GLOBAL ? engine_reserve(interp, mi) : nothing
+        edge_ci = ci_from_engine = cache_mode == CACHE_MODE_GLOBAL ?
+            engine_reserve(interp, mi) : nothing
         if ci_from_engine !== nothing
             codeinst = get(code_cache(interp), mi, nothing)
             if codeinst isa CodeInstance # return existing rettype if the code is already inferred
@@ -774,6 +775,7 @@ function typeinf_edge(interp::AbstractInterpreter, method::Method, @nospecialize
                 inferred = @atomic :monotonic codeinst.inferred
                 if inferred === nothing && force_inline
                     cache_mode = CACHE_MODE_VOLATILE
+                    edge_ci = codeinst
                 else
                     @assert codeinst.def === mi "MethodInstance for cached edge does not match"
                     return return_cached_result(interp, method, codeinst, caller, edgecycle, edgelimited)
@@ -801,7 +803,7 @@ function typeinf_edge(interp::AbstractInterpreter, method::Method, @nospecialize
                 update_valid_age!(caller, frame.valid_worlds)
                 local isinferred = is_inferred(frame)
                 # TODO allocate an edge when isinferred && ci_from_engine === nothing (i.e. cache_mode === CACHE_MODE_LOCAL)
-                local edge = isinferred ? ci_from_engine : nothing
+                local edge = isinferred ? edge_ci : nothing
                 local effects = isinferred ? frame.result.ipo_effects : # effects are adjusted already within `finish` for ipo_effects
                     adjust_effects(effects_for_cycle(frame.ipo_effects), method)
                 local bestguess = frame.bestguess
