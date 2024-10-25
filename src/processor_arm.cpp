@@ -1815,7 +1815,7 @@ JL_DLLEXPORT jl_value_t *jl_cpu_has_fma(int bits)
 #else
     TargetData<feature_sz> target = jit_targets.front();
     FeatureList<feature_sz> features = target.en.features;
-    if (bits == 32 && test_nbit(features, Feature::vfp4sp))
+    if (bits == 32 && test_nbit(features, Feature::vfp4))
         return jl_true;
     else if ((bits == 64 || bits == 32) && test_nbit(features, Feature::vfp4))
         return jl_true;
