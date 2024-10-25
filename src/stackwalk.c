@@ -920,9 +920,8 @@ static void jl_rec_backtrace(jl_task_t *t) JL_NOTSAFEPOINT
      #if defined(_OS_LINUX_) && defined(__GLIBC__)
         __jmp_buf *mctx = &t->ctx.ctx.uc_mcontext->__jmpbuf;
         #if defined(_CPU_ARM_)
-            context = jl_to_bt_context(&t->ctx.ctx);
-            c = *context;
-            mcontext_t *mc = &c.uc_mcontext;
+            ucontext_t *ctx = (ucontext_t*)(&t->ctx.ctx);
+            mcontext_t *mc = ctx->uc_mcontext
         #elif
             mcontext_t *mc = &c.uc_mcontext;
         #endif
