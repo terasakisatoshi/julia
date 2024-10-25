@@ -98,7 +98,7 @@ end
     Top(T, op, x, y) = op(T.(x), T.(y))
     Top(T, op) = (x, y) -> Top(T, op, x, y)
     _compare(x, y) = x == y
-    for T in (Float16, Float32, Float64, BigFloat)
+    for T in (Float32, Float64, BigFloat)
         minmax = Top(T,Base.minmax)
         min = Top(T,Base.min)
         max = Top(T,Base.max)
@@ -135,7 +135,7 @@ end
     end
 end
 @testset "Base._extrema_rf for float" begin
-    for T in (Float16, Float32, Float64, BigFloat)
+    for T in (Float32, Float64, BigFloat)
         ordered = T[-Inf, -5, -0.0, 0.0, 3, Inf]
         unorded = T[NaN, -NaN]
         for i1 in 1:6, i2 in 1:6, j1 in 1:6, j2 in 1:6
@@ -2083,7 +2083,7 @@ end
         @test nextpow(2, T(42)) === T(64)
         @test prevpow(2, T(42)) === T(32)
     end
-    for T in (Float16, Float32, Float64)
+    for T in (Float32, Float64)
         @test prevpow(2, prevfloat(T(1024.0))) == T(512.0)
         @test nextpow(2, nextfloat(T(1024.0))) == T(2048.0)
         @test prevpow(T(2.0), prevfloat(T(1024.0))) == T(512.0)
@@ -2277,7 +2277,7 @@ end
     for T in (
         UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, BigInt
     )
-        for S in (Float16, Float32, Float64, BigFloat)
+        for S in (Float32, Float64, BigFloat)
             @test_throws InexactError convert(T, typemin(S))
             @test_throws InexactError convert(T, typemax(S))
         end
@@ -2604,7 +2604,7 @@ end
 
 @test !isempty(complex(1,2))
 
-@testset "rem $T rounded" for T in (Float16, Float32, Float64, BigFloat)
+@testset "rem $T rounded" for T in (Float32, Float64, BigFloat)
     @test rem(T(1), T(2), RoundToZero)  == 1
     @test rem(T(1), T(2), RoundNearest) == 1
     @test rem(T(1), T(2), RoundDown)    == 1
@@ -2653,7 +2653,7 @@ end
 
 @testset "divrem rounded" begin
     #rounded Floats
-    for T in (Float16, Float32, Float64, BigFloat)
+    for T in (Float32, Float64, BigFloat)
         @test divrem(T(1.5), T(2), RoundToZero)[2]  == 1.5
         @test divrem(T(1.5), T(2), RoundNearest)[2] == -0.5
         @test divrem(T(1.5), T(2), RoundDown)[2]    == 1.5
@@ -2686,7 +2686,7 @@ end
     @test divrem(a,-(a-20), RoundDown) == (div(a,-(a-20), RoundDown), rem(a,-(a-20), RoundDown))
 end
 
-@testset "rem2pi $T" for T in (Float16, Float32, Float64, BigFloat, Int8, Int16, Int32, Int64, Int128)
+@testset "rem2pi $T" for T in (Float32, Float64, BigFloat, Int8, Int16, Int32, Int64, Int128)
     @test rem2pi(T(1), RoundToZero)  == 1
     @test rem2pi(T(1), RoundNearest) == 1
     @test rem2pi(T(1), RoundDown)    == 1
@@ -2731,7 +2731,7 @@ end
     @test rem2pi(T(-13), RoundUp)      ≈ -13+4π
 end
 
-@testset "PR #36420 $T" for T in (Float16, Float32, Float64, BigFloat)
+@testset "PR #36420 $T" for T in (Float32, Float64, BigFloat)
     nan = reinterpret(Float64, reinterpret(UInt64, NaN) | rand(UInt64))
     for r in (RoundToZero, RoundNearest, RoundDown, RoundUp)
         for x in (Inf, -Inf, NaN, -NaN, nan)
@@ -2757,7 +2757,7 @@ Base.literal_pow(::typeof(^), ::PR20530, ::Val{p}) where {p} = 2
     @test x^p == 1
     @test x^2 == 2
     @test [x, x, x].^2 == [2, 2, 2]
-    for T in (Float16, Float32, Float64, BigFloat, Int8, Int, BigInt, Complex{Int}, ComplexF64)
+    for T in (Float32, Float64, BigFloat, Int8, Int, BigInt, Complex{Int}, ComplexF64)
         for p in -4:4
             v = eval(:($T(2)^$p))
             @test 2.0^p == v

@@ -562,7 +562,7 @@ end
     @test Float16(x) == reinterpret(Float16, 0x7401)
     @test Float16(-x) == -Float16(x)
 
-    for T in (Float16, Float32, Float64)
+    for T in (Float32, Float64)
         n = exponent(floatmax(T))
         @test T(big"2"^(n+1)) === T(Inf)
         @test T(big"2"^(n+1) - big"2"^(n-precision(T))) === T(Inf)

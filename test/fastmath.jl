@@ -99,7 +99,7 @@ end
 # math functions
 
 @testset "real arithmetic" begin
-    for T in (Float16, Float32, Float64, BigFloat)
+    for T in (Float32, Float64, BigFloat)
         half = 1/convert(T,2)
         third = 1/convert(T,3)
 

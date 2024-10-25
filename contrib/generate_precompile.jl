@@ -120,7 +120,7 @@ precompile(Tuple{typeof(Core.kwcall), NamedTuple{(:context,), Tuple{Base.TTY}}, 
 precompile(Tuple{Type{Base.UUID}, Base.UUID})
 """
 
-for T in (Float16, Float32, Float64), IO in (IOBuffer, IOContext{IOBuffer}, Base.TTY, IOContext{Base.TTY})
+for T in (Float32, Float64), IO in (IOBuffer, IOContext{IOBuffer}, Base.TTY, IOContext{Base.TTY})
     global hardcoded_precompile_statements
     hardcoded_precompile_statements *= "precompile(Tuple{typeof(show), $IO, $T})\n"
 end

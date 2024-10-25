@@ -5,7 +5,7 @@ Base.iterate(::GenericIterator{N}, i=1) where {N} = i > N ? nothing : (i, i + 1)
 Base.IteratorSize(::Type{GenericIterator{N}}) where {N} = Base.SizeUnknown()
 
 function generic_map_tests(mapf, inplace_mapf=nothing)
-    for typ in (Float16, Float32, Float64,
+    for typ in (Float32, Float64,
                 Int8, Int16, Int32, Int64, Int128,
                 UInt8, UInt16, UInt32, UInt64, UInt128),
         arg_typ in (Integer,

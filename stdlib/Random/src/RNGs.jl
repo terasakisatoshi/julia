@@ -604,7 +604,7 @@ mask128(u::UInt128, ::Type{Float16}) =
 mask128(u::UInt128, ::Type{Float32}) =
     (u & 0x007fffff007fffff007fffff007fffff) | 0x3f8000003f8000003f8000003f800000
 
-for T in (Float16, Float32)
+for T in (Float32)
     @eval function rand!(r::MersenneTwister, A::Array{$T}, ::SamplerTrivial{CloseOpen12{$T}})
         n = length(A)
         n128 = n * sizeof($T) ÷ 16

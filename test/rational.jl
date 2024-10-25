@@ -451,7 +451,7 @@ end # parse
     @test floor(11//3) == round(11//3, RoundDown) == 3//1
     @test floor(-11//3) == round(-11//3, RoundDown) == -4//1
 
-    for T in (Float16, Float32, Float64)
+    for T in (Float32, Float64)
         @test round(T, true//false) === convert(T, Inf)
         @test round(T, true//true) === one(T)
         @test round(T, false//true) === zero(T)

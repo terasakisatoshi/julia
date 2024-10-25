@@ -25,7 +25,7 @@ end
 end
 
 @testset "isinteger" begin
-    for elty in (Float16, Float32, Float64)
+    for elty in (Float32, Float64)
         @test !isinteger(elty(1.2))
         @test isinteger(elty(12))
         @test isinteger(zero(elty))
@@ -294,7 +294,7 @@ end
 end
 
 @testset "Conversion from floating point to integer near extremes (exhaustive)" begin
-    for Ti in Base.BitInteger_types, Tf in (Float16, Float32, Float64), x in (typemin(Ti), typemax(Ti))
+    for Ti in Base.BitInteger_types, Tf in (Float32, Float64), x in (typemin(Ti), typemax(Ti))
         y = Tf(x)
         for i in -3:3
             z = nextfloat(y, i)

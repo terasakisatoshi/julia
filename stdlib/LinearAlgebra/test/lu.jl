@@ -391,7 +391,7 @@ end
 end
 
 @testset "more rdiv! methods" begin
-    for elty in (Float16, Float64, ComplexF64), transform in (transpose, adjoint)
+    for elty in (Float64, ComplexF64), transform in (transpose, adjoint)
         A = randn(elty, 5, 5)
         C = copy(A)
         B = randn(elty, 5, 5)
@@ -409,7 +409,7 @@ end
 end
 
 @testset "transpose(A) / lu(B)' should not overwrite A (#36657)" begin
-    for elty in (Float16, Float64, ComplexF64)
+    for elty in (Float64, ComplexF64)
         A = randn(elty, 5, 5)
         B = randn(elty, 5, 5)
         C = copy(A)

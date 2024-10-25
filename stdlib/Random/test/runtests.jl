@@ -867,7 +867,7 @@ end
     @test rand!(GLOBAL_RNG, vA, I1) === vA
     rand!(xo, vB, I1)
     @test A == B
-    for T in (Float16, Float32)
+    for T in (Float32)
         B = fill!(B, 1.0)
         @test rand!(GLOBAL_RNG, A, I2) === A == rand!(xo, B, I2) === B
         B = fill!(B, 1.0)

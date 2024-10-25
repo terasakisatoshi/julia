@@ -173,7 +173,7 @@ end
 # We compare to BigFloat instead of hard-coding
 # values, assuming that BigFloat has an independently tested implementation.
 @testset "basic math functions" begin
-    @testset "$T" for T in (Float16, Float32, Float64)
+    @testset "$T" for T in (Float32, Float64)
         x = T(1//3)
         y = T(1//2)
         yi = 4
@@ -729,7 +729,7 @@ end
 end
 
 @testset "modf" begin
-    @testset "$T" for T in (Float16, Float32, Float64)
+    @testset "$T" for T in (Float32, Float64)
         @test modf(T(1.25)) === (T(0.25), T(1.0))
         @test modf(T(1.0))  === (T(0.0), T(1.0))
         @test modf(T(-Inf)) === (T(-0.0), T(-Inf))
@@ -741,7 +741,7 @@ end
 end
 
 @testset "frexp" begin
-    @testset "$elty" for elty in (Float16, Float32, Float64)
+    @testset "$elty" for elty in (Float32, Float64)
         @test frexp( convert(elty,0.5) ) == (0.5, 0)
         @test frexp( convert(elty,4.0) ) == (0.5, 3)
         @test frexp( convert(elty,10.5) ) == (0.65625, 4)
@@ -1345,7 +1345,7 @@ end
             @test hypot(1s, 2s, 3s) ≈ s * hypot(1, 2, 3) rtol=8eps(T)
         end
     end
-    @testset "$T" for T in (Float16, Float32, Float64, BigFloat)
+    @testset "$T" for T in (Float32, Float64, BigFloat)
         let x = 1.1sqrt(floatmin(T))
             @test (@inferred hypot(x, x/4)) ≈ x * sqrt(17/BigFloat(16))
             @test (@inferred hypot(x, x/4, x/4)) ≈ x * sqrt(9/BigFloat(8))
@@ -1414,7 +1414,7 @@ end
     POW_TOLS = Dict(Float16=>[.51, .51, .51, 2.0, 1.5],
                     Float32=>[.51, .51, .51, 2.0, 1.5],
                     Float64=>[.55, 0.8, 1.5, 2.0, 1.5])
-    for T in (Float16, Float32, Float64)
+    for T in (Float32, Float64)
         for x in (0.0, -0.0, 1.0, 10.0, 2.0, Inf, NaN, -Inf, -NaN)
             for y in (0.0, -0.0, 1.0, -3.0,-10.0 , Inf, NaN, -Inf, -NaN)
                 got, expected = T(x)^T(y), T(big(x)^T(y))

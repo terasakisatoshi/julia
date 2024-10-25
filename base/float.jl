@@ -121,7 +121,7 @@ significand_mask(::Type{Float16}) = 0x03ff
 
 mantissa(x::T) where {T} = reinterpret(Unsigned, x) & significand_mask(T)
 
-for T in (Float16, Float32, Float64)
+for T in (Float32, Float64)
     @eval significand_bits(::Type{$T}) = $(trailing_ones(significand_mask(T)))
     @eval exponent_bits(::Type{$T}) = $(sizeof(T)*8 - significand_bits(T) - 1)
     @eval exponent_bias(::Type{$T}) = $(Int(exponent_one(T) >> significand_bits(T)))
@@ -233,7 +233,7 @@ uabs(x::BitSigned) = unsigned(abs(x))
 # TODO: deprecate in 2.0
 Float16(x::Integer) = convert(Float16, convert(Float32, x)::Float32)
 
-for t1 in (Float16, Float32, Float64)
+for t1 in (Float32, Float64)
     for st in (Int8, Int16, Int32, Int64)
         @eval begin
             (::Type{$t1})(x::($st)) = sitofp($t1, x)
@@ -950,7 +950,7 @@ such `y` exists (e.g. if `x` is `-Inf` or `NaN`), then return `x`.
 prevfloat(x::AbstractFloat) = nextfloat(x,-1)
 
 for Ti in (Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128)
-    for Tf in (Float16, Float32, Float64)
+    for Tf in (Float32, Float64)
         if Ti <: Unsigned || sizeof(Ti) < sizeof(Tf)
             # Here `Tf(typemin(Ti))-1` is exact, so we can compare the lower-bound
             # directly. `Tf(typemax(Ti))+1` is either always exactly representable, or

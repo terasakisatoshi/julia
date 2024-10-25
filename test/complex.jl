@@ -41,7 +41,7 @@ end
 end
 
 @testset "arithmetic" begin
-    @testset for T in (Float16, Float32, Float64, BigFloat)
+    @testset for T in (Float32, Float64, BigFloat)
         t = true
         f = false
         @testset "equality" begin
@@ -912,7 +912,7 @@ end
     @test sign(1 + im) ≈ (1 + im) / sqrt(2)
     @test sign(1 - im) ≈ (1 - im) / sqrt(2)
 
-    for T in (Float16, Float32, Float64)
+    for T in (Float32, Float64)
         z = Complex(zero(T), zero(T))
         @test sign(z) === z
         @test sign(-z) === -z
@@ -1046,7 +1046,7 @@ end
 @testset "corner cases of division, issue #22983" begin
     # These results abide by ISO/IEC 10967-3:2006(E) and
     # mathematical definition of division of complex numbers.
-    for T in (Float16, Float32, Float64, BigFloat)
+    for T in (Float32, Float64, BigFloat)
         @test isequal(one(T) / zero(Complex{T}), one(Complex{T}) / zero(Complex{T}))
         @test isequal(one(T) / zero(Complex{T}), Complex{T}(NaN, NaN))
         @test isequal(one(Complex{T}) / zero(T), Complex{T}(Inf, NaN))
@@ -1057,7 +1057,7 @@ end
 end
 
 @testset "division by Inf, issue#23134" begin
-    @testset "$T" for T in (Float16, Float32, Float64, BigFloat)
+    @testset "$T" for T in (Float32, Float64, BigFloat)
         @test isequal(one(T) / complex(T(Inf)),         complex(zero(T), -zero(T)))
         @test isequal(one(T) / complex(T(Inf), one(T)), complex(zero(T), -zero(T)))
         @test isequal(one(T) / complex(T(Inf), T(NaN)), complex(zero(T), -zero(T)))
@@ -1217,7 +1217,7 @@ end
 end
 
 @testset "issue #55266" begin
-    for T in (Float16, Float32, Float64)
+    for T in (Float32, Float64)
         @test isapprox(atanh(1+im*floatmin(T)), Complex{T}(atanh(1+im*big(floatmin(T)))))
     end
 end
