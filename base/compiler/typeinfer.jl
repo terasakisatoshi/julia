@@ -28,7 +28,7 @@ using Core.Compiler: -, +, :, Vector, length, first, empty!, push!, pop!, @inlin
 # What we record for any given frame we infer during type inference.
 struct InferenceFrameInfo
     mi::Core.MethodInstance
-    world::UInt64
+    world::UInt
     sptypes::Vector{Core.Compiler.VarState}
     slottypes::Vector{Any}
     nargs::Int
@@ -55,16 +55,16 @@ MethodInstance.
 """
 struct Timing
     mi_info::InferenceFrameInfo
-    start_time::UInt64
-    cur_start_time::UInt64
-    time::UInt64
+    start_time::UInt
+    cur_start_time::UInt
+    time::UInt
     children::Core.Array{Timing,1}
     bt         # backtrace collected upon initial entry to typeinf
 end
 Timing(mi_info, start_time, cur_start_time, time, children) = Timing(mi_info, start_time, cur_start_time, time, children, nothing)
-Timing(mi_info, start_time) = Timing(mi_info, start_time, start_time, UInt64(0), Timing[])
+Timing(mi_info, start_time) = Timing(mi_info, start_time, start_time, UInt(0), Timing[])
 
-_time_ns() = ccall(:jl_hrtime, UInt64, ())  # Re-implemented here because Base not yet available.
+_time_ns() = ccall(:jl_hrtime, UInt, ())  # Re-implemented here because Base not yet available.
 
 # We keep a stack of the Timings for each of the MethodInstances currently being timed.
 # Since type inference currently operates via a depth-first search (during abstract
@@ -127,7 +127,7 @@ end
     mi_info = _typeinf_identifier(frame)
 
     # Start the new timer right before returning
-    push!(_timings, Timing(mi_info, UInt64(0)))
+    push!(_timings, Timing(mi_info, UInt(0)))
     len = length(_timings)
     new_timer = @inbounds _timings[len]
     # Set the current time _after_ appending the node, to try to exclude the
@@ -1032,17 +1032,17 @@ typeinf_ircode(interp::AbstractInterpreter, method::Method, @nospecialize(atype)
     typeinf_ircode(interp, specialize_method(method, atype, sparams), optimize_until)
 function typeinf_ircode(interp::AbstractInterpreter, mi::MethodInstance,
                         optimize_until::Union{Integer,AbstractString,Nothing})
-    start_time = ccall(:jl_typeinf_timing_begin, UInt64, ())
+    start_time = ccall(:jl_typeinf_timing_begin, UInt, ())
     frame = typeinf_frame(interp, mi, false)
     if frame === nothing
-        ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+        ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
         return nothing, Any
     end
     (; result) = frame
     opt = OptimizationState(frame, interp)
     ir = run_passes_ipo_safe(opt.src, opt, result, optimize_until)
     rt = widenconst(ignorelimited(result.result))
-    ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+    ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
     return ir, rt
 end
 
@@ -1053,29 +1053,29 @@ typeinf_frame(interp::AbstractInterpreter, method::Method, @nospecialize(atype),
               run_optimizer::Bool) =
     typeinf_frame(interp, specialize_method(method, atype, sparams), run_optimizer)
 function typeinf_frame(interp::AbstractInterpreter, mi::MethodInstance, run_optimizer::Bool)
-    start_time = ccall(:jl_typeinf_timing_begin, UInt64, ())
+    start_time = ccall(:jl_typeinf_timing_begin, UInt, ())
     result = InferenceResult(mi, typeinf_lattice(interp))
     cache_mode = run_optimizer ? :global : :no
     frame = InferenceState(result, cache_mode, interp)
     frame === nothing && return nothing
     typeinf(interp, frame)
-    ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+    ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
     return frame
 end
 
 # compute (and cache) an inferred AST and return type
 function typeinf_ext(interp::AbstractInterpreter, mi::MethodInstance)
     method = mi.def::Method
-    start_time = ccall(:jl_typeinf_timing_begin, UInt64, ())
+    start_time = ccall(:jl_typeinf_timing_begin, UInt, ())
     code = get(code_cache(interp), mi, nothing)
     if code isa CodeInstance
         # see if this code already exists in the cache
         inf = @atomic :monotonic code.inferred
         if use_const_api(code)
-            ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+            ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
             return codeinfo_for_const(interp, mi, WorldRange(code.min_world, code.max_world), code.rettype_const)
         elseif isa(inf, CodeInfo)
-            ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+            ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
             if !(inf.min_world == code.min_world &&
                     inf.max_world == code.max_world &&
                     inf.rettype === code.rettype)
@@ -1086,7 +1086,7 @@ function typeinf_ext(interp::AbstractInterpreter, mi::MethodInstance)
             end
             return inf
         elseif isa(inf, String)
-            ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+            ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
             inf = _uncompressed_ir(code, inf)
             return inf
         end
@@ -1099,7 +1099,7 @@ function typeinf_ext(interp::AbstractInterpreter, mi::MethodInstance)
     frame = InferenceState(result, #=cache_mode=#:global, interp)
     frame === nothing && return nothing
     typeinf(interp, frame)
-    ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+    ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
     if result_is_constabi(interp, true, frame.result)
         return codeinfo_for_const(interp, frame.linfo, frame.result.valid_worlds, frame.result.result.val)
     end
@@ -1117,16 +1117,16 @@ end
 typeinf_type(interp::AbstractInterpreter, match::MethodMatch) =
     typeinf_type(interp, specialize_method(match))
 function typeinf_type(interp::AbstractInterpreter, mi::MethodInstance)
-    start_time = ccall(:jl_typeinf_timing_begin, UInt64, ())
+    start_time = ccall(:jl_typeinf_timing_begin, UInt, ())
     code = get(code_cache(interp), mi, nothing)
     if code isa CodeInstance
         # see if this rettype already exists in the cache
-        ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+        ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
         return code.rettype
     end
     result = InferenceResult(mi, typeinf_lattice(interp))
     typeinf(interp, result, :global)
-    ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+    ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
     is_inferred(result) || return nothing
     return widenconst(ignorelimited(result.result))
 end
@@ -1141,7 +1141,7 @@ function typeinf_ext_toplevel(interp::AbstractInterpreter, mi::MethodInstance)
         src = mi.uninferred::CodeInfo
         if !src.inferred
             # toplevel lambda - infer directly
-            start_time = ccall(:jl_typeinf_timing_begin, UInt64, ())
+            start_time = ccall(:jl_typeinf_timing_begin, UInt, ())
             if !src.inferred
                 result = InferenceResult(mi, typeinf_lattice(interp))
                 frame = InferenceState(result, src, #=cache_mode=#:global, interp)
@@ -1149,7 +1149,7 @@ function typeinf_ext_toplevel(interp::AbstractInterpreter, mi::MethodInstance)
                 @assert is_inferred(frame) # TODO: deal with this better
                 src = frame.src
             end
-            ccall(:jl_typeinf_timing_end, Cvoid, (UInt64,), start_time)
+            ccall(:jl_typeinf_timing_end, Cvoid, (UInt,), start_time)
         end
     end
     return src
