@@ -252,7 +252,12 @@ JL_DLLEXPORT float julia_half_to_float(uint16_t param) {
 
 // starting with GCC 12 and Clang 15, we have _Float16 on most platforms
 // (but not on Windows; this may be a bug in the MSYS2 GCC compilers)
-#if ((defined(__GNUC__) && __GNUC__ > 11) || \
+#if defined(_CPU_ARM_)
+    // otherwise, pass using floating-point calling conventions
+    #define FLOAT16_TYPE float
+    #define FLOAT16_TO_UINT16(x) ((uint16_t)*(uint32_t*)&(x))
+    #define FLOAT16_FROM_UINT16(x) ({ uint32_t tmp = (uint32_t)(x); *(float*)&tmp; })
+#elif ((defined(__GNUC__) && __GNUC__ > 11) || \
      (defined(__clang__) && __clang_major__ > 14)) && \
     !defined(_CPU_PPC64_) && !defined(_CPU_PPC_) && \
     !defined(_OS_WINDOWS_)
