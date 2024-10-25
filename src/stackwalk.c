@@ -915,6 +915,8 @@ static void jl_rec_backtrace(jl_task_t *t) JL_NOTSAFEPOINT
         context = &t->ctx.ctx;
 #elif defined(JL_HAVE_UCONTEXT)
         context = jl_to_bt_context(&t->ctx.ctx);
+#elif defined(_CPU_ARM_)
+        context = jl_to_bt_context(&t->ctx.ctx);
 #elif defined(JL_HAVE_ASM)
         memset(&c, 0, sizeof(c));
      #if defined(_OS_LINUX_) && defined(__GLIBC__)
