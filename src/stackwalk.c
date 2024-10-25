@@ -919,7 +919,13 @@ static void jl_rec_backtrace(jl_task_t *t) JL_NOTSAFEPOINT
         memset(&c, 0, sizeof(c));
      #if defined(_OS_LINUX_) && defined(__GLIBC__)
         __jmp_buf *mctx = &t->ctx.ctx.uc_mcontext->__jmpbuf;
-        mcontext_t *mc = &c.uc_mcontext;
+        #if defined(_CPU_ARM_)
+            context = jl_to_bt_context(&t->ctx.ctx);
+            c = *context;
+            mcontext_t *mc = &c.uc_mcontext;
+        #elif
+            mcontext_t *mc = &c.uc_mcontext;
+        #endif
       #if defined(_CPU_X86_)
         // https://github.com/bminor/glibc/blame/master/sysdeps/i386/__longjmp.S
         // https://github.com/bminor/glibc/blame/master/sysdeps/i386/jmpbuf-offsets.h
