@@ -1620,13 +1620,16 @@ static void ensure_jit_target(bool imaging)
         auto &features0 = jit_targets[t.base].en.features;
         // Always clone when code checks CPU features
         t.en.flags |= JL_TARGET_CLONE_CPU;
-        static constexpr uint32_t clone_fp16[] = {Feature::fp16fml,Feature::fullfp16};
-        for (auto fe: clone_fp16) {
-            if (!test_nbit(features0, fe) && test_nbit(t.en.features, fe)) {
-                t.en.flags |= JL_TARGET_CLONE_FLOAT16;
-                break;
+        #if !defined(_CPU_ARCH)
+            static constexpr uint32_t clone_fp16[] = {Feature::fp16fml,Feature::fullfp16};
+            for (auto fe: clone_fp16) {
+                if (!test_nbit(features0, fe) && test_nbit(t.en.features, fe)) {
+                    t.en.flags |= JL_TARGET_CLONE_FLOAT16;
+                    break;
+                }
             }
-        }
+        #endif
+
         // The most useful one in general...
         t.en.flags |= JL_TARGET_CLONE_LOOP;
 #ifdef _CPU_ARM_
