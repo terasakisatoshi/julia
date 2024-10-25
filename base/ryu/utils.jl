@@ -267,7 +267,7 @@ end
 [`pow5invsplit`](@ref) computed via lookup table.
 """
 function pow5invsplit_lookup end
-for T in (Float64, Float32, Float16)
+for T in (Float64, Float32)
     e2_max = exponent_max(T) - precision(T) - 1
     i_max = log10pow2(e2_max)
     table_sym = Symbol("pow5invsplit_table_", string(T))
@@ -295,7 +295,7 @@ end
 [`pow5split`](@ref) computed via lookup table.
 """
 function pow5split_lookup end
-for T in (Float64, Float32, Float16)
+for T in (Float64, Float32)
     e2_min = 1 - exponent_bias(T) - significand_bits(T) - 2
     i_max = 1 - e2_min - log10pow5(-e2_min)
     table_sym = Symbol("pow5split_table_", string(T))
