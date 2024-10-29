@@ -22,7 +22,8 @@ if Sys.iswindows()
 elseif Sys.isapple()
     const libcurl = "@rpath/libcurl.4.dylib"
 else
-    const libcurl = "libcurl.so.4"
+    # const libcurl = "libcurl.so.4"
+    const libcurl = "/usr/local/lib/libcurl.so.4"
 end
 
 function __init__()
