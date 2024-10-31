@@ -1432,7 +1432,7 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArra
     else
         msk_d0 = ~(u << ld0)
         msk_d1 = (u << (ld1+1))
-        lt0 = 63
+        lt0 = 31
     end
 
     bind = kd0
@@ -1450,7 +1450,7 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArra
     nc = _div64(numbits - ind + pos_s)
     @inbounds for i = 1:nc
         c = UInt64(0)
-        for j = 0:63
+        for j = 0:31
             c |= (UInt64(unchecked_bool_convert(C[ind])) << j)
             ind += 1
         end

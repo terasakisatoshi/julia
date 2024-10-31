@@ -985,22 +985,22 @@ end
         i = first(ax1) - 1
         if ndims(bc) == 1 || bitst >= 64 - length(ax1)
             if ndims(bc) > 1 && bitst != 0
-                @inbounds @simd for j = bitst:63
-                    remain |= UInt64(convert(Bool, bc′[i+=1, I])) << (j & 63)
+                @inbounds @simd for j = bitst:31
+                    remain |= UInt64(convert(Bool, bc′[i+=1, I])) << (j & 31)
                 end
                 @inbounds destc[indc+=1] = remain
                 bitst, remain = 0, UInt64(0)
             end
             while i <= last(ax1) - 64
                 z = UInt64(0)
-                @inbounds @simd for j = 0:63
-                    z |= UInt64(convert(Bool, bc′[i+=1, I])) << (j & 63)
+                @inbounds @simd for j = 0:31
+                    z |= UInt64(convert(Bool, bc′[i+=1, I])) << (j & 31)
                 end
                 @inbounds destc[indc+=1] = z
             end
         end
         @inbounds @simd for j = i+1:last(ax1)
-            remain |= UInt64(convert(Bool, bc′[j, I])) << (bitst & 63)
+            remain |= UInt64(convert(Bool, bc′[j, I])) << (bitst & 31)
             bitst += 1
         end
     end
