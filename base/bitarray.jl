@@ -118,12 +118,12 @@ IndexStyle(::Type{<:BitArray}) = IndexLinear()
 const _msk64 = ~UInt(0)
 #@inline _div64(l) = l >> 6
 @inline _div64(l) = l >> 5
-# @inline _mod64(l) = l & 63
+# @inline _mod64(l) = l & 31
 @inline _mod64(l) = l & 31
 @inline _blsr(x)= x & (x-1) #zeros the last set bit. Has native instruction on many archs. needed in multidimensional.jl
 @inline _msk_end(l::Int) = _msk64 >>> _mod64(-l)
 @inline _msk_end(B::BitArray) = _msk_end(length(B))
-num_bit_chunks(n::Int) = _div64(n+63)
+num_bit_chunks(n::Int) = _div64(n+31)
 
 @inline get_chunks_id(i::Int) = _div64(i-1)+1, _mod64(i-1)
 
@@ -295,7 +295,7 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt}, pos_d::Int, C::Array{Bool}, 
     else
         msk_d0 = ~(u << ld0)
         msk_d1 = (u << (ld1+1))
-        lt0 = 63
+        lt0 = 31
     end
 
     bind = kd0
@@ -329,7 +329,7 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt}, pos_d::Int, C::Array{Bool}, 
     end
     @inbounds for i = (nc8+1):nc
         c = UInt(0)
-        for j = 0:63
+        for j = 0:31
             c |= (UInt(C[ind]) << j)
             ind += 1
         end
@@ -522,7 +522,7 @@ function _copyto_bitarray!(B::BitArray, A::AbstractArray)
     @inbounds begin
         for i = 1:nc-1
             c = UInt(0)
-            for j = 0:63
+            for j = 0:31
                 c |= (UInt(convert(Bool, A[Ai])::Bool) << j)
                 Ai = nextind(A, Ai)
             end
@@ -861,7 +861,7 @@ function pushfirst!(B::BitVector, item)
         return B
     end
     for i = length(Bc) : -1 : 2
-        Bc[i] = (Bc[i] << 1) | (Bc[i-1] >>> 63)
+        Bc[i] = (Bc[i] << 1) | (Bc[i-1] >>> 31)
     end
     Bc[1] = UInt(item) | (Bc[1] << 1)
     return B
@@ -875,7 +875,7 @@ function popfirst!(B::BitVector)
         Bc = B.chunks
 
         for i = 1 : length(Bc) - 1
-            Bc[i] = (Bc[i] >>> 1) | (Bc[i+1] << 63)
+            Bc[i] = (Bc[i] >>> 1) | (Bc[i+1] << 31)
         end
 
         l = _mod64(length(B))
@@ -909,7 +909,7 @@ function _insert_int!(B::BitVector, i::Int, item)
     B.len += 1
 
     for t = length(Bc) : -1 : k + 1
-        Bc[t] = (Bc[t] << 1) | (Bc[t - 1] >>> 63)
+        Bc[t] = (Bc[t] << 1) | (Bc[t - 1] >>> 31)
     end
 
     msk_aft = (_msk64 << j)
@@ -922,7 +922,7 @@ end
 function _deleteat!(B::BitVector, i::Int)
     k, j = get_chunks_id(i)
 
-    msk_bef = _msk64 >>> (63 - j)
+    msk_bef = _msk64 >>> (31 - j)
     msk_aft = ~msk_bef
     msk_bef >>>= 1
 
@@ -931,11 +931,11 @@ function _deleteat!(B::BitVector, i::Int)
     @inbounds begin
         Bc[k] = (msk_bef & Bc[k]) | ((msk_aft & Bc[k]) >> 1)
         if length(Bc) > k
-            Bc[k] |= (Bc[k + 1] << 63)
+            Bc[k] |= (Bc[k + 1] << 31)
         end
 
         for t = k + 1 : length(Bc) - 1
-            Bc[t] = (Bc[t] >>> 1) | (Bc[t + 1] << 63)
+            Bc[t] = (Bc[t] >>> 1) | (Bc[t + 1] << 31)
         end
 
         l = _mod64(length(B))
@@ -1287,7 +1287,7 @@ function _reverse!(B::BitVector, ::Colon)
     n = length(B)
     n == 0 && return B
 
-    k = _mod64(n+63) + 1
+    k = _mod64(n+31) + 1
     h = 64 - k
 
     i, j = 0, length(B.chunks)
