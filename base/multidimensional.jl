@@ -136,7 +136,7 @@ module IteratorsMD
     convert(::Type{T}, index::CartesianIndex) where {T<:Tuple} = convert(T, index.I)
 
     # hashing
-    # const cartindexhash_seed = UInt == UInt64 ? 0xd60ca92f8284b8b0 : 0xf2ea7c2e
+    # const cartindexhash_seed = UInt == UInt ? 0xd60ca92f8284b8b0 : 0xf2ea7c2e
     const cartindexhash_seed = 0xf2ea7c2e
     function Base.hash(ci::CartesianIndex, h::UInt)
         h += cartindexhash_seed
@@ -1374,7 +1374,7 @@ end
 
 ## setindex!
 
-function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArray, pos_s::Int, numbits::Int)
+function copy_to_bitarray_chunks!(Bc::Vector{UInt}, pos_d::Int, C::StridedArray, pos_s::Int, numbits::Int)
     bind = pos_d
     cind = pos_s
     lastind = pos_d + numbits - 1
@@ -1395,7 +1395,7 @@ end
     x == 0 || x == 1 || throw(InexactError(:try_bool_conversion, Bool, x))
 @inline unchecked_bool_convert(x::Real) = x == 1
 
-function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArray{<:Real}, pos_s::Int, numbits::Int)
+function copy_to_bitarray_chunks!(Bc::Vector{UInt}, pos_d::Int, C::StridedArray{<:Real}, pos_s::Int, numbits::Int)
     @inbounds for i = (1:numbits) .+ (pos_s - 1)
         try_bool_conversion(C[i])
     end
@@ -1418,9 +1418,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArra
     bind = kd0
     ind = pos_s
     @inbounds if ld0 > 0
-        c = UInt64(0)
+        c = UInt(0)
         for j = ld0:lt0
-            c |= (UInt64(unchecked_bool_convert(C[ind])) << j)
+            c |= (UInt(unchecked_bool_convert(C[ind])) << j)
             ind += 1
         end
         Bc[kd0] = (Bc[kd0] & msk_d0) | (c & ~msk_d0)
@@ -1429,9 +1429,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArra
 
     nc = _div64(numbits - ind + pos_s)
     @inbounds for i = 1:nc
-        c = UInt64(0)
+        c = UInt(0)
         for j = 0:31
-            c |= (UInt64(unchecked_bool_convert(C[ind])) << j)
+            c |= (UInt(unchecked_bool_convert(C[ind])) << j)
             ind += 1
         end
         Bc[bind] = c
@@ -1440,9 +1440,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::StridedArra
 
     @inbounds if bind ≤ kd1
         @assert bind == kd1
-        c = UInt64(0)
+        c = UInt(0)
         for j = 0:ld1
-            c |= (UInt64(unchecked_bool_convert(C[ind])) << j)
+            c |= (UInt(unchecked_bool_convert(C[ind])) << j)
             ind += 1
         end
         Bc[kd1] = (Bc[kd1] & msk_d1) | (c & ~msk_d1)
