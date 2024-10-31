@@ -726,7 +726,7 @@ function precompilepkgs(pkgs::Vector{String}=String[];
                 wait(t)
             end
         catch err
-            handle_interrupt(err, true) || rethrow()
+            # handle_interrupt(err, true) || rethrow()
         finally
             fancyprint && print(io, ansi_enablecursor)
         end
