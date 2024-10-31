@@ -739,6 +739,8 @@ function precompilepkgs(pkgs::Vector{String}=String[];
     ## precompilation loop
 
     for (pkg, deps) in depsmap
+        pkg == "Pkg" && continue
+        pkg == "LazyArtifacts" && continue
         cachepaths = Base.find_all_in_cache_path(pkg)
         sourcepath = Base.locate_package(pkg)
         single_requested_pkg = length(pkgs) == 1 && only(pkgs) == pkg.name
