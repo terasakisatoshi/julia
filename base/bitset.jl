@@ -51,7 +51,7 @@ function copy!(dest::BitSet, src::BitSet)
     dest
 end
 
-sizehint!(s::BitSet, n::Integer) = (sizehint!(s.bits, (n+63) >> 6); s)
+sizehint!(s::BitSet, n::Integer) = (sizehint!(s.bits, (n+31) >> 6); s)
 
 function _bits_getindex(b::Bits, n::Int, offset::Int)
     ci = _div64(n) - offset + 1
@@ -148,10 +148,10 @@ function union!(s::BitSet, r::AbstractUnitRange{<:Integer})
     i = _mod64(a)
     j = _mod64(b)
     @inbounds if diffa == diffb
-        s.bits[diffa + 1] |= (((~CHK0) >> i) << (i+63-j)) >> (63-j)
+        s.bits[diffa + 1] |= (((~CHK0) >> i) << (i+31-j)) >> (31-j)
     else
         s.bits[diffa + 1] |= ((~CHK0) >> i) << i
-        s.bits[diffb + 1] |= (~CHK0  << (63-j)) >> (63-j)
+        s.bits[diffb + 1] |= (~CHK0  << (31-j)) >> (31-j)
         for n = diffa+1:diffb-1
             s.bits[n+1] = ~CHK0
         end
