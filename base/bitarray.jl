@@ -22,7 +22,7 @@ the functions [`trues`](@ref) and [`falses`](@ref).
 
 """
 mutable struct BitArray{N} <: AbstractArray{Bool, N}
-    chunks::Vector{UInt64}
+    chunks::Vector{UInt}
     len::Int
     dims::NTuple{N,Int}
     function BitArray{N}(::UndefInitializer, dims::Vararg{Int,N}) where N
@@ -34,8 +34,8 @@ mutable struct BitArray{N} <: AbstractArray{Bool, N}
             i += 1
         end
         nc = num_bit_chunks(n)
-        chunks = Vector{UInt64}(undef, nc)
-        nc > 0 && (chunks[end] = UInt64(0))
+        chunks = Vector{UInt}(undef, nc)
+        nc > 0 && (chunks[end] = UInt(0))
         b = new(chunks, n)
         N != 1 && (b.dims = dims)
         return b
@@ -115,9 +115,11 @@ IndexStyle(::Type{<:BitArray}) = IndexLinear()
 
 ## aux functions ##
 
-const _msk64 = ~UInt64(0)
-@inline _div64(l) = l >> 6
-@inline _mod64(l) = l & 63
+const _msk64 = ~UInt(0)
+#@inline _div64(l) = l >> 6
+@inline _div64(l) = l >> 5
+# @inline _mod64(l) = l & 63
+@inline _mod64(l) = l & 31
 @inline _blsr(x)= x & (x-1) #zeros the last set bit. Has native instruction on many archs. needed in multidimensional.jl
 @inline _msk_end(l::Int) = _msk64 >>> _mod64(-l)
 @inline _msk_end(B::BitArray) = _msk_end(length(B))
@@ -125,7 +127,7 @@ num_bit_chunks(n::Int) = _div64(n+63)
 
 @inline get_chunks_id(i::Int) = _div64(i-1)+1, _mod64(i-1)
 
-function glue_src_bitchunks(src::Vector{UInt64}, k::Int, ks1::Int, msk_s0::UInt64, ls0::Int)
+function glue_src_bitchunks(src::Vector{UInt}, k::Int, ks1::Int, msk_s0::UInt, ls0::Int)
     @inbounds begin
         chunk = ((src[k] & msk_s0) >>> ls0)
         if ks1 > k && ls0 > 0
@@ -136,7 +138,7 @@ function glue_src_bitchunks(src::Vector{UInt64}, k::Int, ks1::Int, msk_s0::UInt6
     return chunk
 end
 
-function copy_chunks!(dest::Vector{UInt64}, pos_d::Int, src::Vector{UInt64}, pos_s::Int, numbits::Int)
+function copy_chunks!(dest::Vector{UInt}, pos_d::Int, src::Vector{UInt}, pos_s::Int, numbits::Int)
     numbits == 0 && return
     if dest === src && pos_d > pos_s
         return copy_chunks_rtol!(dest, pos_d, pos_s, numbits)
@@ -182,7 +184,7 @@ function copy_chunks!(dest::Vector{UInt64}, pos_d::Int, src::Vector{UInt64}, pos
     if ks1 >= ks0 + delta_kd
         chunk_s1 = glue_src_bitchunks(src, ks0 + delta_kd, ks1, msk_s0, ls0)
     else
-        chunk_s1 = UInt64(0)
+        chunk_s1 = UInt(0)
     end
 
     chunk_s = (chunk_s0 >>> (64 - ld0)) | (chunk_s1 << ld0)
@@ -192,7 +194,7 @@ function copy_chunks!(dest::Vector{UInt64}, pos_d::Int, src::Vector{UInt64}, pos
     return
 end
 
-function copy_chunks_rtol!(chunks::Vector{UInt64}, pos_d::Int, pos_s::Int, numbits::Int)
+function copy_chunks_rtol!(chunks::Vector{UInt}, pos_d::Int, pos_s::Int, numbits::Int)
     pos_d == pos_s && return
     pos_d < pos_s && return copy_chunks!(chunks, pos_d, chunks, pos_s, numbits)
 
@@ -240,7 +242,7 @@ function copy_chunks_rtol!(chunks::Vector{UInt64}, pos_d::Int, pos_s::Int, numbi
     end
 end
 
-function fill_chunks!(Bc::Array{UInt64}, x::Bool, pos::Int, numbits::Int)
+function fill_chunks!(Bc::Array{UInt}, x::Bool, pos::Int, numbits::Int)
     numbits <= 0 && return
     k0, l0 = get_chunks_id(pos)
     k1, l1 = get_chunks_id(pos+numbits-1)
@@ -267,12 +269,12 @@ function fill_chunks!(Bc::Array{UInt64}, x::Bool, pos::Int, numbits::Int)
     end
 end
 
-copy_to_bitarray_chunks!(dest::Vector{UInt64}, pos_d::Int, src::BitArray, pos_s::Int, numbits::Int) =
+copy_to_bitarray_chunks!(dest::Vector{UInt}, pos_d::Int, src::BitArray, pos_s::Int, numbits::Int) =
     copy_chunks!(dest, pos_d, src.chunks, pos_s, numbits)
 
 # pack 8 Bools encoded as one contiguous UIn64 into a single byte, e.g.:
 # 0000001:0000001:00000000:00000000:00000001:00000000:00000000:00000001 → 11001001 → 0xc9
-function pack8bools(z::UInt64)
+function pack8bools(z::UInt)
     z |= z >>> 7
     z |= z >>> 14
     z |= z >>> 28
@@ -280,7 +282,7 @@ function pack8bools(z::UInt64)
     return z
 end
 
-function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::Array{Bool}, pos_s::Int, numbits::Int)
+function copy_to_bitarray_chunks!(Bc::Vector{UInt}, pos_d::Int, C::Array{Bool}, pos_s::Int, numbits::Int)
     kd0, ld0 = get_chunks_id(pos_d)
     kd1, ld1 = get_chunks_id(pos_d + numbits - 1)
 
@@ -299,9 +301,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::Array{Bool}
     bind = kd0
     ind = pos_s
     @inbounds if ld0 > 0
-        c = UInt64(0)
+        c = UInt(0)
         for j = ld0:lt0
-            c |= (UInt64(C[ind]) << j)
+            c |= (UInt(C[ind]) << j)
             ind += 1
         end
         Bc[kd0] = (Bc[kd0] & msk_d0) | (c & ~msk_d0)
@@ -312,9 +314,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::Array{Bool}
     nc8 = (nc >>> 3) << 3
     if nc8 > 0
         ind8 = 1
-        P8 = Ptr{UInt64}(pointer(C, ind)) # unaligned i64 pointer
+        P8 = Ptr{UInt}(pointer(C, ind)) # unaligned i64 pointer
         @inbounds for i = 1:nc8
-            c = UInt64(0)
+            c = UInt(0)
             for j = 0:7
                 # unaligned load
                 c |= (pack8bools(unsafe_load(P8, ind8)) << (j<<3))
@@ -326,9 +328,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::Array{Bool}
         ind += (ind8-1) << 3
     end
     @inbounds for i = (nc8+1):nc
-        c = UInt64(0)
+        c = UInt(0)
         for j = 0:63
-            c |= (UInt64(C[ind]) << j)
+            c |= (UInt(C[ind]) << j)
             ind += 1
         end
         Bc[bind] = c
@@ -336,9 +338,9 @@ function copy_to_bitarray_chunks!(Bc::Vector{UInt64}, pos_d::Int, C::Array{Bool}
     end
     @inbounds if bind ≤ kd1
         @assert bind == kd1
-        c = UInt64(0)
+        c = UInt(0)
         for j = 0:ld1
-            c |= (UInt64(C[ind]) << j)
+            c |= (UInt(C[ind]) << j)
             ind += 1
         end
         Bc[kd1] = (Bc[kd1] & msk_d1) | (c & ~msk_d1)
@@ -353,14 +355,14 @@ end
 const bitcache_chunks = 64 # this can be changed
 const bitcache_size = 64 * bitcache_chunks # do not change this
 
-dumpbitcache(Bc::Vector{UInt64}, bind::Int, C::Vector{Bool}) =
+dumpbitcache(Bc::Vector{UInt}, bind::Int, C::Vector{Bool}) =
     copy_to_bitarray_chunks!(Bc, ((bind - 1) << 6) + 1, C, 1, min(bitcache_size, (length(Bc)-bind+1) << 6))
 
 
 ## custom iterator ##
 function iterate(B::BitArray, i::Int=0)
     i >= length(B) && return nothing
-    (B.chunks[_div64(i)+1] & (UInt64(1)<<_mod64(i)) != 0, i+1)
+    (B.chunks[_div64(i)+1] & (UInt(1)<<_mod64(i)) != 0, i+1)
 end
 
 ## similar, fill!, copy! etc ##
@@ -519,17 +521,17 @@ function _copyto_bitarray!(B::BitArray, A::AbstractArray)
     Ai = first(eachindex(A))
     @inbounds begin
         for i = 1:nc-1
-            c = UInt64(0)
+            c = UInt(0)
             for j = 0:63
-                c |= (UInt64(convert(Bool, A[Ai])::Bool) << j)
+                c |= (UInt(convert(Bool, A[Ai])::Bool) << j)
                 Ai = nextind(A, Ai)
             end
             Bc[i] = c
         end
-        c = UInt64(0)
+        c = UInt(0)
         tail = _mod64(l - 1) + 1
         for j = 0:tail-1
-            c |= (UInt64(convert(Bool, A[Ai])::Bool) << j)
+            c |= (UInt(convert(Bool, A[Ai])::Bool) << j)
             Ai = nextind(A, Ai)
         end
         msk = _msk_end(tail)
@@ -670,9 +672,9 @@ end
 
 ## Indexing: getindex ##
 
-@inline function unsafe_bitgetindex(Bc::Vector{UInt64}, i::Int)
+@inline function unsafe_bitgetindex(Bc::Vector{UInt}, i::Int)
     i1, i2 = get_chunks_id(i)
-    u = UInt64(1) << i2
+    u = UInt(1) << i2
     @inbounds r = (Bc[i1] & u) != 0
     return r
 end
@@ -684,13 +686,13 @@ end
 
 ## Indexing: setindex! ##
 
-@inline function unsafe_bitsetindex!(Bc::Array{UInt64}, x::Bool, i::Int)
+@inline function unsafe_bitsetindex!(Bc::Array{UInt}, x::Bool, i::Int)
     i1, i2 = get_chunks_id(i)
     _unsafe_bitsetindex!(Bc, x, i1, i2)
 end
 
-@inline function _unsafe_bitsetindex!(Bc::Array{UInt64}, x::Bool, i1::Int, i2::Int)
-    u = UInt64(1) << i2
+@inline function _unsafe_bitsetindex!(Bc::Array{UInt}, x::Bool, i1::Int, i2::Int)
+    u = UInt(1) << i2
     @inbounds begin
         c = Bc[i1]
         Bc[i1] = ifelse(x, c | u, c & ~u)
@@ -729,7 +731,7 @@ function _unsafe_setindex!(B::BitArray, X::AbstractArray, I::BitArray)
     for i = 1:lc
         @inbounds Imsk = Ic[i]
         @inbounds C = Bc[i]
-        u = UInt64(1)
+        u = UInt(1)
         for j = 1:(i < lc ? 64 : last_chunk_len)
             if Imsk & u != 0
                 Xi > lastXi && throw_setindex_mismatch(X, count(I))
@@ -758,7 +760,7 @@ function push!(B::BitVector, item)
     l = _mod64(length(B))
     if l == 0
         _growend!(Bc, 1)
-        Bc[end] = UInt64(0)
+        Bc[end] = UInt(0)
     end
     B.len += 1
     if item
@@ -776,7 +778,7 @@ function append!(B::BitVector, items::BitVector)
     k1 = num_bit_chunks(n0 + n1)
     if k1 > k0
         _growend!(Bc, k1 - k0)
-        Bc[end] = UInt64(0)
+        Bc[end] = UInt(0)
     end
     B.len += n1
     copy_chunks!(Bc, n0+1, items.chunks, 1, n1)
@@ -795,7 +797,7 @@ function prepend!(B::BitVector, items::BitVector)
     k1 = num_bit_chunks(n0 + n1)
     if k1 > k0
         _growend!(Bc, k1 - k0)
-        Bc[end] = UInt64(0)
+        Bc[end] = UInt(0)
     end
     B.len += n1
     copy_chunks!(Bc, 1 + n1, Bc, 1, n0)
@@ -825,7 +827,7 @@ function _resize_int!(B::BitVector, n::Int)
     k1 = num_bit_chunks(n)
     if k1 > k0
         _growend!(Bc, k1 - k0)
-        Bc[end] = UInt64(0)
+        Bc[end] = UInt(0)
     end
     B.len = n
     return B
@@ -851,7 +853,7 @@ function pushfirst!(B::BitVector, item)
     l = _mod64(length(B))
     if l == 0
         _growend!(Bc, 1)
-        Bc[end] = UInt64(0)
+        Bc[end] = UInt(0)
     end
     B.len += 1
     if B.len == 1
@@ -861,7 +863,7 @@ function pushfirst!(B::BitVector, item)
     for i = length(Bc) : -1 : 2
         Bc[i] = (Bc[i] << 1) | (Bc[i-1] >>> 63)
     end
-    Bc[1] = UInt64(item) | (Bc[1] << 1)
+    Bc[1] = UInt(item) | (Bc[1] << 1)
     return B
 end
 
@@ -902,7 +904,7 @@ function _insert_int!(B::BitVector, i::Int, item)
     l = _mod64(length(B))
     if l == 0
         _growend!(Bc, 1)
-        Bc[end] = UInt64(0)
+        Bc[end] = UInt(0)
     end
     B.len += 1
 
@@ -1156,7 +1158,7 @@ function (-)(B::BitArray)
     Bc = B.chunks
     ind = 1
     for i = 1:length(Bc)-1
-        u = UInt64(1)
+        u = UInt(1)
         c = Bc[i]
         for j = 1:64
             if c & u != 0
@@ -1166,7 +1168,7 @@ function (-)(B::BitArray)
             u <<= 1
         end
     end
-    u = UInt64(1)
+    u = UInt(1)
     c = Bc[end]
     for j = 0:_mod64(l-1)
         if c & u != 0
@@ -1289,7 +1291,7 @@ function _reverse!(B::BitVector, ::Colon)
     h = 64 - k
 
     i, j = 0, length(B.chunks)
-    u = UInt64(0)
+    u = UInt(0)
     v = bitreverse(B.chunks[j])
     B.chunks[j] = 0
     @inbounds while true
@@ -1443,7 +1445,7 @@ circshift!(B::BitVector, i::Integer) = circshift!(B, B, i)
 
 ## count & find ##
 
-function bitcount(Bc::Vector{UInt64}; init::T=0) where {T}
+function bitcount(Bc::Vector{UInt}; init::T=0) where {T}
     n::T = init
     @inbounds for i = 1:length(Bc)
         n = (n + count_ones(Bc[i])) % T
@@ -1453,7 +1455,7 @@ end
 
 _count(::typeof(identity), B::BitArray, ::Colon, init) = bitcount(B.chunks; init)
 
-function unsafe_bitfindnext(Bc::Vector{UInt64}, start::Int)
+function unsafe_bitfindnext(Bc::Vector{UInt}, start::Int)
     chunk_start = _div64(start-1)+1
     within_chunk_start = _mod64(start-1)
     mask = _msk64 << within_chunk_start
@@ -1539,7 +1541,7 @@ function _findnext_int(testf::Function, B::BitArray, start::Int)
 end
 #findfirst(testf::Function, B::BitArray) = findnext(testf, B, 1)  ## defined in array.jl
 
-function unsafe_bitfindprev(Bc::Vector{UInt64}, start::Int)
+function unsafe_bitfindprev(Bc::Vector{UInt}, start::Int)
     chunk_start = _div64(start-1)+1
     mask = _msk_end(start)
 
@@ -1787,7 +1789,7 @@ function bit_map!(f::F, dest::BitArray, A::BitArray) where F
     for i = 1:(len_Ac-1)
         destc[i] = f(Ac[i])
     end
-    # the last effected UInt64's original content
+    # the last effected UInt's original content
     dest_last = destc[len_Ac]
     _msk = _msk_end(A)
     # first zero out the bits mask is going to change
@@ -1809,7 +1811,7 @@ function bit_map!(f::F, dest::BitArray, A::BitArray, B::BitArray) where F
     for i = 1:len_Ac-1
         destc[i] = f(Ac[i], Bc[i])
     end
-    # the last effected UInt64's original content
+    # the last effected UInt's original content
     dest_last = destc[len_Ac]
     _msk = _msk_end(min_bitlen)
     # first zero out the bits mask is going to change

@@ -1,7 +1,7 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
-const Bits = Vector{UInt64}
-const CHK0 = zero(UInt64)
+const Bits = Vector{UInt}
+const CHK0 = zero(UInt)
 const NO_OFFSET = Int === Int64 ? -one(Int) << 60 : -one(Int) << 29
 # + NO_OFFSET must be small enough to stay < 0 when added with any offset.
 #   An offset is in the range -2^57:2^57 (64-bits architectures)
@@ -11,11 +11,11 @@ const NO_OFFSET = Int === Int64 ? -one(Int) << 60 : -one(Int) << 29
 #   a small optimization in the in(x, ::BitSet) method
 
 mutable struct BitSet <: AbstractSet{Int}
-    const bits::Vector{UInt64}
+    const bits::Vector{UInt}
     # 1st stored Int equals 64*offset
     offset::Int
 
-    BitSet() = new(resize!(Vector{UInt64}(undef, 4), 0), NO_OFFSET)
+    BitSet() = new(resize!(Vector{UInt}(undef, 4), 0), NO_OFFSET)
 end
 
 """
@@ -56,7 +56,7 @@ sizehint!(s::BitSet, n::Integer) = (sizehint!(s.bits, (n+63) >> 6); s)
 function _bits_getindex(b::Bits, n::Int, offset::Int)
     ci = _div64(n) - offset + 1
     1 <= ci <= length(b) || return false
-    @inbounds r = (b[ci] & (one(UInt64) << _mod64(n))) != 0
+    @inbounds r = (b[ci] & (one(UInt) << _mod64(n))) != 0
     r
 end
 
@@ -358,7 +358,7 @@ function show(io::IO, s::BitSet)
     print(io, "])")
 end
 
-function _check0(a::Vector{UInt64}, b::Int, e::Int)
+function _check0(a::Vector{UInt}, b::Int, e::Int)
     @inbounds for i in b:e
         a[i] == CHK0 || return false
     end
