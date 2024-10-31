@@ -679,7 +679,10 @@ function precompilepkgs(pkgs::Vector{String}=String[];
                             dep, config = pkg_config
                             loaded = warn_loaded && haskey(Base.loaded_modules, dep)
                             _name = haskey(exts, dep) ? string(exts[dep], " → ", dep.name) : dep.name
+                            string(_name) == "Pkg" && continue
+                            string(_name) == "LazyArtifacts" && continue
                             name = dep in direct_deps ? _name : string(color_string(_name, :light_black))
+
                             if nconfigs > 1 && !isempty(config[1])
                                 config_str = "$(join(config[1], " "))"
                                 name *= color_string(" $(config_str)", :light_black)
