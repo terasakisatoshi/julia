@@ -679,9 +679,9 @@ function precompilepkgs(pkgs::Vector{String}=String[];
                             dep, config = pkg_config
                             loaded = warn_loaded && haskey(Base.loaded_modules, dep)
                             _name = haskey(exts, dep) ? string(exts[dep], " → ", dep.name) : dep.name
-                            string(_name) == "Pkg" && continue
-                            string(_name) == "LazyArtifacts" && continue
-                            string(_name) == "Downloads" && continue
+                            occursin("Pkg", string(_name)) && continue
+                            occursin("LazyArtifacts", string(_name)) && continue
+                            occursin("Downloads", string(_name)) && continue
                             name = dep in direct_deps ? _name : string(color_string(_name, :light_black))
 
                             if nconfigs > 1 && !isempty(config[1])
@@ -743,9 +743,9 @@ function precompilepkgs(pkgs::Vector{String}=String[];
     ## precompilation loop
 
     for (pkg, deps) in depsmap
-        pkg == "Pkg" && continue
-        pkg == "LazyArtifacts" && continue
-        pkg == "Downloads" && continue
+        occursin("Pkg", pkg) && continue
+        occursin("LazyArtifacts", pkg) && continue
+        occursin("Downloads", pkg) && continue
 
         cachepaths = Base.find_all_in_cache_path(pkg)
         sourcepath = Base.locate_package(pkg)
