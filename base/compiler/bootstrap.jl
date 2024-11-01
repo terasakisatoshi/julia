@@ -11,11 +11,9 @@ let time() = ccall(:jl_clock_now, Float64, ())
 
     # analyze_escapes_tt = Tuple{typeof(analyze_escapes), IRCode, Int, TODO}
     optimize_tt = Tuple{typeof(optimize), NativeInterpreter, OptimizationState{NativeInterpreter}, InferenceResult}
+    println("AAAA")
     fs = Any[
-        # we first create caches for the optimizer, because they contain many loop constructions
-        # and they're better to not run in interpreter even during bootstrapping
-        #=analyze_escapes_tt,=# optimize_tt,
-        # then we create caches for inference entries
+        optimize_tt,
         typeinf_ext, typeinf, typeinf_edge,
     ]
     # tfuncs can't be inferred from the inference entries above, so here we infer them manually
