@@ -198,7 +198,7 @@ end
 _searchindex(s::AbstractString, t::AbstractChar, i::Integer) = something(findnext(isequal(t), s, i), 0)
 
 function _search_bloom_mask(c)
-    UInt64(1) << (c & 63)
+    UInt(1) << (c & 31)
 end
 
 _nthbyte(s::Union{String, SubString{String}}, i) = codeunit(s, i)

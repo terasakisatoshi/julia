@@ -873,7 +873,7 @@ if Limb === UInt64 === UInt
             pow = trailing_zeros(x)
             nd = Base.ndigits0z(x, 2)
             idx = (pow >>> 6) + 1
-            shift = (pow & 63) % UInt
+            shift = (pow & 31) % UInt
             upshift = BITS_PER_LIMB - shift
             asz = abs(sz)
             if shift == 0
