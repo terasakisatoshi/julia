@@ -13,14 +13,15 @@ let time() = ccall(:jl_clock_now, Float64, ())
     optimize_tt = Tuple{typeof(optimize), NativeInterpreter, OptimizationState{NativeInterpreter}, InferenceResult}
     println("AAAA")
     tmp = [1]
-    println("BBB")
-    println(tmp[1])
+
 
     fs = Any[
         optimize_tt,
         typeinf_ext, typeinf, typeinf_edge,
     ]
     # tfuncs can't be inferred from the inference entries above, so here we infer them manually
+    println("BBB")
+    println(tmp[1])
     for x in T_FFUNC_VAL
         push!(fs, x[3])
     end
