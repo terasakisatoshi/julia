@@ -14,16 +14,7 @@ mutable struct BitSet <: AbstractSet{Int}
     const bits::Vector{UInt}
     # 1st stored Int equals 64*offset
     offset::Int
-
-<<<<<<< HEAD
-    function BitSet()
-        a = Vector{UInt64}(undef, 4) # start with some initial space for holding 0:255 without additional allocations later
-        setfield!(a, :size, (0,)) # aka `empty!(a)` inlined
-        return new(a, NO_OFFSET)
-   end
-=======
     BitSet() = new(resize!(Vector{UInt}(undef, 4), 0), NO_OFFSET)
->>>>>>> cfda6acc89 (32bit hack)
 end
 
 """
