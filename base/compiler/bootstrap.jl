@@ -12,6 +12,10 @@ let time() = ccall(:jl_clock_now, Float64, ())
     # analyze_escapes_tt = Tuple{typeof(analyze_escapes), IRCode, Int, TODO}
     optimize_tt = Tuple{typeof(optimize), NativeInterpreter, OptimizationState{NativeInterpreter}, InferenceResult}
     println("AAAA")
+    tmp = [1]
+    println("BBB")
+    println(tmp[1])
+
     fs = Any[
         optimize_tt,
         typeinf_ext, typeinf, typeinf_edge,
