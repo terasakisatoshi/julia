@@ -20,7 +20,7 @@ let time() = ccall(:jl_clock_now, Float64, ())
         typeinf_ext, typeinf, typeinf_edge,
     ]
     # tfuncs can't be inferred from the inference entries above, so here we infer them manually
-    println("BBB")
+    println("BBB:", T_FFUNC_VAL)
     println(tmp[1])
     for x in T_FFUNC_VAL
         push!(fs, x[3])
