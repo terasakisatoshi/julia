@@ -1143,9 +1143,6 @@ namespace {
         if (jl_processor_print_help || (target_flags & JL_TARGET_UNKNOWN_NAME)) {
             std::unique_ptr<MCSubtargetInfo> MSTI(
                 TheTarget->createMCSubtargetInfo(TheTriple.str(), "", ""));
-            if (TheCPU == "armv7-a+fp"){
-                TheCPU = "armv7l";
-            }
             /*
             if (!MSTI->isCPUStringValid(TheCPU)) {
                 jl_errorf("Invalid CPU name \"%s\".", TheCPU.c_str());
