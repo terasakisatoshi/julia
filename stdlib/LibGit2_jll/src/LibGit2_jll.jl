@@ -22,8 +22,7 @@ if Sys.iswindows()
 elseif Sys.isapple()
     const libgit2 = "@rpath/libgit2.1.7.dylib"
 else
-    # const libgit2 = "libgit2.so.1.7"
-    const libgit2 = "/usr/local/lib/libgit2.so.1.7"
+    const libgit2 = "libgit2.so.1.7"
 end
 
 function __init__()
