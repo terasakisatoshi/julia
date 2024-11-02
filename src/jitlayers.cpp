@@ -1144,7 +1144,7 @@ namespace {
             std::unique_ptr<MCSubtargetInfo> MSTI(
                 TheTarget->createMCSubtargetInfo(TheTriple.str(), "", ""));
             if (TheCPU == "armv7-a+fp"){
-                TheCPU = "armv7-a";
+                TheCPU = "armv7l";
             }
             /*
             if (!MSTI->isCPUStringValid(TheCPU)) {
