@@ -34,7 +34,7 @@ NetworkOptions = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 OpenBLAS_jll = "4536629a-c528-5b80-bd46-f80d51c5b363"
 OpenLibm_jll = "05823500-19ac-5b8b-9628-191a04bc5112"
 PCRE2_jll = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
-#Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
@@ -58,3 +58,6 @@ libLLVM_jll = "8f36deef-c2a5-5394-99ed-8e07531fb29a"
 libblastrampoline_jll = "8e850b90-86db-534c-a0d3-1478176c7d93"
 nghttp2_jll = "8e850ede-7688-5339-a07c-302acd2aaf8d"
 p7zip_jll = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
+
+[sources]
+Pkg = {url = "https://github.com/terasakisatoshi/Pkg.jl", rev = "terasaki/v1.11.1-arm-patch"}
