@@ -44,7 +44,8 @@ cleanall: clean
 
 html: deps
 	@echo "Building HTML documentation."
-	$(JULIA_EXECUTABLE) --color=yes $(call cygpath_w,$(SRCDIR)/make.jl) $(DOCUMENTER_OPTIONS)
+	# This causes a Bus error on 32 bit raspberry pi
+	# $(JULIA_EXECUTABLE) --color=yes $(call cygpath_w,$(SRCDIR)/make.jl) $(DOCUMENTER_OPTIONS)
 	@echo "Build finished. The HTML pages are in _build/html."
 
 pdf: deps
